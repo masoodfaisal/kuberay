@@ -69,4 +69,5 @@ class LLamaCPPDeployment:
         return {"output": output_text}
 
 
+print("Binding")
 model = LLamaCPPDeployment.bind()
