@@ -1,13 +1,11 @@
-# https://pypi.org/project/llama-cpp-python/0.1.9/
-# https://awinml.github.io/llm-ggml-python/
-# https://github.com/abetlen/llama-cpp-python/blob/main/examples/high_level_api/langchain_custom_llm.py
-# https://github.com/huggingface/blog/blob/main/llama32.md
-
-
 import os
-import ray
-from ray import serve
+import logging
 from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import StreamingResponse, JSONResponse
+
+from ray import serve
+
 from starlette.requests import Request
 from starlette.responses import StreamingResponse, JSONResponse
 import logging
@@ -24,18 +22,15 @@ app = FastAPI()
 @serve.deployment(name="LLamaCPPDeployment")
 @serve.ingress(app)
 class LLamaCPPDeployment:
-
     def __init__(self):
         # Initialize the LLamaCPP model
-        self.model_id = os.getenv("MODEL_ID")
-        self.n_ctx = int(os.getenv("N_CTX"))
-        self.n_batch = int(os.getenv("N_BATCH"))
-
+        self.model_id = os.getenv("MODEL_ID", default="hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
+        # self.n_ctx = int(os.getenv("N_CTX"))
+        # self.n_batch = int(os.getenv("N_BATCH"))
         # self.llama_cpp = Llama(model_path=MODEL_ID, n_ctx=self.n_ctx, n_batch=self.n_batch)
-        self.llm = Llama.from_pretrained(
-            repo_id=model_id, #"hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF",
-            filename="*q8_0.gguf",
-)
+        self.llm = Llama.from_pretrained(repo_id=self.model_id, 
+                    filename="*q8_0.gguf")
+        #"hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF",
 
     @app.post("/v1/chat/completion")
     async def call_llama(self, request: Request):
@@ -60,7 +55,7 @@ class LLamaCPPDeployment:
         # output_text = output["choices"][0]["text"].strip()
         # return {"output": output_text}
 
-        output_text = llm.create_chat_completion(
+        output_text = self.llm.create_chat_completion(
             messages = [
                 {
                     "role": "user",
@@ -69,6 +64,7 @@ class LLamaCPPDeployment:
             ]
         )        
         return JSONResponse(content={"output": output_text})
+
 
 
 
