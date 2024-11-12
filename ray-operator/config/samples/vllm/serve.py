@@ -62,9 +62,11 @@ class VLLMDeployment:
                 served_model_names = self.engine_args.served_model_name
             else:
                 served_model_names = [self.engine_args.model]
-        
+
+            model_name_custom = served_model_names[0] 
+            
             base_model_paths = [
-                BaseModelPath(name=served_model_names.split("/")[1], model_path=served_model_names)
+                BaseModelPath(name=model_name_custom.split("/")[1], model_path=model_name_custom)
             ]                
             self.openai_serving_chat = OpenAIServingChat(
                 self.engine,
