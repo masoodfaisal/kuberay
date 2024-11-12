@@ -17,6 +17,8 @@ from vllm.entrypoints.openai.protocol import (
     ChatCompletionResponse,
     ErrorResponse,
 )
+from vllm.entrypoints.openai.serving_engine import BaseModelPath
+from vllm.entrypoints.logger import RequestLogger
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
 from vllm.entrypoints.openai.serving_engine import LoRAModulePath
 from vllm.utils import FlexibleArgumentParser
@@ -60,10 +62,15 @@ class VLLMDeployment:
                 served_model_names = self.engine_args.served_model_name
             else:
                 served_model_names = [self.engine_args.model]
+        
+            base_model_paths = [
+                BaseModelPath(name=served_model_names.split("/")[1], model_path=served_model_names)
+            ]                
             self.openai_serving_chat = OpenAIServingChat(
                 self.engine,
                 model_config,
-                served_model_names=served_model_names,
+                # served_model_names=served_model_names,
+                base_model_paths=base_model_paths,
                 response_role=self.response_role,
                 lora_modules=self.lora_modules,
                 chat_template=self.chat_template,
