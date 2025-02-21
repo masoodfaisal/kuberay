@@ -23,7 +23,7 @@ from vllm.utils import FlexibleArgumentParser
 
 logger = logging.getLogger("ray.serve")
 
-app = FastAPI()
+app = FastAPI(title="vLLM", redirect_slashes=False)
 
 
 @serve.deployment(name="VLLMDeployment")
